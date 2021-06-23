@@ -1,41 +1,38 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+var createError = require("http-errors");
+var express = require("express");
+var logger = require("morgan");
+var cookie = require("cookie-parser");
+var session = require("express-session");
+var myLogger = require("./middlewares/logger");
+var cookieTracker = require("./middlewares/cookietracker");
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+// Include all routes
+var classRouter = require("./routes/classes");
 
+// Create Express instance
 var app = express();
 
-// Test Comment
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
-
-app.use(logger('dev'));
+// Middlewares
+app.use(myLogger);
+app.use(logger("dev"));
+app.use(cookie());
+app.use(cookieTracker);
+app.use(session({ secret: "s3cre7", resave: false, saveUninitialized: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+// Registering routes
+app.use("/", classRouter);
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
+// 404 Handler
+app.use(function (req, res, next) {
+	next(createError(404)); // {status: 404, message: "Not Found"}
 });
 
 // error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+app.use(function (err, req, res, next) {
+	res.status(err.status || 500);
+	res.send({ msg: err.message || "error" });
 });
 
 module.exports = app;
