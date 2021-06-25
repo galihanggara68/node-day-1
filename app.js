@@ -1,4 +1,3 @@
-var createError = require("http-errors");
 var express = require("express");
 var logger = require("morgan");
 var cookie = require("cookie-parser");
@@ -26,7 +25,7 @@ app.use("/", classRouter);
 
 // 404 Handler
 app.use(function (req, res, next) {
-	next(createError(404)); // {status: 404, message: "Not Found"}
+	next({status: 404, message: "Not Found"}); // {status: 404, message: "Not Found"}
 });
 
 // error handler
